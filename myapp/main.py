@@ -7,8 +7,7 @@ import pandas as pd
 
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
-from bokeh.models import BoxSelectTool
-from bokeh.models import ColumnDataSource, DataRange1d, Select
+from bokeh.models import ColumnDataSource, DataRange1d, Select, BoxSelectTool
 from bokeh.palettes import Blues4
 from bokeh.plotting import figure
 
