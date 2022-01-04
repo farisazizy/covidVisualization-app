@@ -3,7 +3,7 @@ import datetime
 from os.path import dirname, join
 
 import pandas as pd
-from scipy.signal import savgol_filter
+# from scipy.signal import savgol_filter
 
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
@@ -23,11 +23,12 @@ def get_dataset(src, name, distribution):
     df['right'] = df.Date + datetime.timedelta(days=0.5)
     df = df.set_index(['Date'])
     df.sort_index(inplace=True)
+    '''
     if distribution == 'Smoothed':
         window, order = 51, 3
         for key in STATISTICS:
             df[key] = savgol_filter(df[key], window, order)
-
+    '''
     return ColumnDataSource(data=df)
 
 def make_plot(source, title):
