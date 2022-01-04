@@ -32,21 +32,15 @@ def get_dataset(src, name, distribution):
     return ColumnDataSource(data=df)
 
 def make_plot(source, title):
-    plot = figure(x_axis_type="datetime", width=800, tools="", toolbar_location=None)
+    plot = figure(x_axis_type="datetime", width=800, tools="pan,wheel_zoom,box_zoom,reset", toolbar_location='above')
     plot.title.text = title
 
     plot.line(x='Date', y='New Cases', source=source, legend_label="Cases", line_color="black", color=Blues4[2])
     plot.line(x='Date', y='New Deaths', source=source, legend_label="Deaths",line_color="red", color=Blues4[1])
     plot.line(x='Date', y='New Recovered', source=source, legend_label="Recovered",line_color="green", color=Blues4[0])
-    '''
-    plot.quad(top='New Cases', bottom='New Cases', left='left', right='right',
-              color=Blues4[2], source=source, legend_label="Cases")
-    plot.quad(top='New Deaths', bottom='New Deaths', left='left', right='right',
-              color=Blues4[1], source=source, legend_label="Deaths")
-    plot.quad(top='New Recovered', bottom='New Recovered', left='left', right='right',
-              color=Blues4[0], alpha=0.5, line_color="black", source=source, legend_label="Recovered")
-    '''
+
     # fixed attributes
+    plot.add_tools(BoxSelectTool(dimensions="width")
     plot.xaxis.axis_label = None
     plot.yaxis.axis_label = "Total"
     plot.axis.axis_label_text_font_style = "bold"
@@ -57,7 +51,7 @@ def make_plot(source, title):
 
 def update_plot(attrname, old, new):
     pulau = island_select.value
-    plot.title.text = "Covid cases for " + island[pulau]['title']
+    plot.title.text = "Covid cases for " + island[pulau]['title'] + " Island"
 
     src = get_dataset(df, island[pulau]['Island'], distribution_select.value)
     source.data.update(src.data)
