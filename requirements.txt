@@ -1,6 +1,5 @@
 bokeh==2.1.1
 Jinja2==2.10
-numpy==1.14.2
 pandas==0.19.2
 PyYAML==3.10
 requests==2.18.4
