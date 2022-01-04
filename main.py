@@ -16,11 +16,11 @@ STATISTICS = ['Total Cases', 'Total Deaths', 'Total Recovered', 'New Cases', 'Ne
 def get_dataset(src, name, distribution):
 
     df = src[src.Island == name].copy()
-    del df['Island']
-    df['Date'] = pd.to_datetime(df.date)
+    #del df
+    df['Date'] = pd.to_datetime(df.Date)
     # timedelta here instead of pd.DateOffset to avoid pandas bug < 0.18 (Pandas issue #11925)
-    df['left'] = df.date - datetime.timedelta(days=0.5)
-    df['right'] = df.date + datetime.timedelta(days=0.5)
+    df['left'] = df.Date - datetime.timedelta(days=0.5)
+    df['right'] = df.Date + datetime.timedelta(days=0.5)
     df = df.set_index(['Date'])
     df.sort_index(inplace=True)
     if distribution == 'Smoothed':
@@ -34,13 +34,17 @@ def make_plot(source, title):
     plot = figure(x_axis_type="datetime", width=800, tools="", toolbar_location=None)
     plot.title.text = title
 
-    plot.quad(top='Total Cases', bottom='New Cases', left='left', right='right',
+    plot.line(x='Date', y='New Cases', source=source, legend_label="Cases", line_color="black", color=Blues4[2])
+    plot.line(x='Date', y='New Deaths', source=source, legend_label="Deaths",line_color="red", color=Blues4[1])
+    plot.line(x='Date', y='New Recovered', source=source, legend_label="Recovered",line_color="green", color=Blues4[0])
+    '''
+    plot.quad(top='New Cases', bottom='New Cases', left='left', right='right',
               color=Blues4[2], source=source, legend_label="Cases")
-    plot.quad(top='Total Deaths', bottom='New Deaths', left='left', right='right',
+    plot.quad(top='New Deaths', bottom='New Deaths', left='left', right='right',
               color=Blues4[1], source=source, legend_label="Deaths")
-    plot.quad(top='Total Recovered', bottom='New Recovered', left='left', right='right',
+    plot.quad(top='New Recovered', bottom='New Recovered', left='left', right='right',
               color=Blues4[0], alpha=0.5, line_color="black", source=source, legend_label="Recovered")
-
+    '''
     # fixed attributes
     plot.xaxis.axis_label = None
     plot.yaxis.axis_label = "Total"
@@ -51,8 +55,8 @@ def make_plot(source, title):
     return plot
 
 def update_plot(attrname, old, new):
-    island = island_select.value
-    plot.title.text = "Weather data for " + island[pulau]['title']
+    pulau = island_select.value
+    plot.title.text = "Covid cases for " + island[pulau]['title']
 
     src = get_dataset(df, island[pulau]['Island'], distribution_select.value)
     source.data.update(src.data)
@@ -78,13 +82,12 @@ island = {
         'title': 'Papua',
     }
 }
-
-island_select = Select(value=pulau, title='pulau', options=sorted(island.keys()))
+island_select = Select(value=pulau, title='Select Island', options=sorted(island.keys()))
 distribution_select = Select(value=distribution, title='Distribution', options=['Discrete', 'Smoothed'])
 
 df = pd.read_csv(join(dirname(__file__), 'data/covid.csv'))
 source = get_dataset(df, island[pulau]['Island'], distribution)
-plot = make_plot(source, "Covid cases for " + island[pulau]['title'])
+plot = make_plot(source, "Covid cases for " + island[pulau]['Island'] + ' Island')
 
 island_select.on_change('value', update_plot)
 distribution_select.on_change('value', update_plot)
