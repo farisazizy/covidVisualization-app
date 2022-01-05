@@ -1,4 +1,3 @@
-
 import datetime
 from os.path import dirname, join
 
@@ -8,7 +7,7 @@ import pandas as pd
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import BoxSelectTool
-
+from bokeh.models import Slider, CustomJS, Range1d
 from bokeh.models import ColumnDataSource, DataRange1d, Select
 from bokeh.palettes import Blues4
 from bokeh.plotting import figure
@@ -25,16 +24,14 @@ def get_dataset(src, name, distribution):
     df['right'] = df.Date + datetime.timedelta(days=0.5)
     df = df.set_index(['Date'])
     df.sort_index(inplace=True)
-    '''
     if distribution == 'Smoothed':
         window, order = 51, 3
-        for key in STATISTICS:#
-            df[key] = savgol_filter(df[key], window, order)
-    '''
+        for key in STATISTICS:
+            #df[key] = savgol_filter(df[key], window, order)
     return ColumnDataSource(data=df)
-    
+
 def make_plot(source, title):
-    plot = figure(x_axis_type="datetime", width=800, tools="pan,wheel_zoom,box_zoom,reset", toolbar_location='above')
+    plot = figure(background_fill_color = '#efefef', x_axis_type="datetime", width=800, y_range = Range1d(start = 0, end = 10000), tools="pan,wheel_zoom,box_zoom,reset", toolbar_location='above')
     plot.title.text = title
 
     plot.line(x='Date', y='New Cases', source=source, legend_label="Cases", line_color="black", color=Blues4[2])
@@ -59,6 +56,38 @@ def update_plot(attrname, old, new):
     src = get_dataset(df, island[pulau]['Island'], distribution_select.value)
     source.data.update(src.data)
 
+def update(attr, old, new):
+    global last_value
+    if last_value is not None:
+        if new > 0:
+            if new > last_value:
+                plot.y_range.start = plot.y_range.start + new
+                plot.y_range.end = plot.y_range.end - new
+
+                plot.x_range.start = plot.x_range.start + new
+                plot.x_range.end = plot.x_range.end - new
+            else:
+                plot.y_range.start = plot.y_range.start - new
+                plot.y_range.end = plot.y_range.end + new
+
+                plot.x_range.start = plot.x_range.start - new
+                plot.x_range.end = plot.x_range.end + new
+        elif new < 0:
+            if new < last_value:
+                plot.y_range.start = plot.y_range.start + new
+                plot.y_range.end = plot.y_range.end - new
+
+                plot.x_range.start = plot.x_range.start + new
+                plot.x_range.end = plot.x_range.end - new
+            else:
+                plot.y_range.start = plot.y_range.start - new
+                plot.y_range.end = plot.y_range.end + new
+
+                plot.x_range.start = plot.x_range.start - new
+                plot.x_range.end = plot.x_range.end + new
+
+    last_value = new
+
 pulau = 'Jawa'
 distribution = 'Discrete'
 
@@ -80,6 +109,11 @@ island = {
         'title': 'Papua',
     }
 }
+
+slider_zoom = Slider(title = 'Zoom', start = -400, end = 800, value = 0, step = 100, align='center')
+zoom_value = slider_zoom.value
+last_value = None
+
 island_select = Select(value=pulau, title='Select Island', options=sorted(island.keys()))
 distribution_select = Select(value=distribution, title='Distribution', options=['Discrete', 'Smoothed'])
 
@@ -89,8 +123,10 @@ plot = make_plot(source, "Covid cases for " + island[pulau]['Island'] + ' Island
 
 island_select.on_change('value', update_plot)
 distribution_select.on_change('value', update_plot)
+slider_zoom.on_change('value', update)
 
 controls = column(island_select, distribution_select)
 
 curdoc().add_root(row(plot, controls))
+curdoc().add_root(row(slider_zoom))
 curdoc().title = "Covid Cases"
