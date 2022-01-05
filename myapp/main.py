@@ -2,7 +2,7 @@ import datetime
 from os.path import dirname, join
 
 import pandas as pd
-from scipy.signal import savgol_filter
+#from scipy.signal import savgol_filter
 
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
@@ -27,7 +27,7 @@ def get_dataset(src, name, distribution):
     if distribution == 'Smoothed':
         window, order = 51, 3
         for key in STATISTICS:
-            df[key] = savgol_filter(df[key], window, order)
+            #df[key] = savgol_filter(df[key], window, order)
     return ColumnDataSource(data=df)
 
 def make_plot(source, title):
@@ -110,7 +110,7 @@ island = {
     }
 }
 
-slider_zoom = Slider(title = 'Zoom', start = -400, end = 800, value = 0, step = 100, align='center')
+slider_zoom = Slider(title = 'Zoom', start = -400, end = 800, value = 0, step = 1000, align='center')
 zoom_value = slider_zoom.value
 last_value = None
 
